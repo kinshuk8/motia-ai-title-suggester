@@ -112,7 +112,7 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(
-        `Gemini API Error: ${errorData.error.message || "Unknown AI Error"}`,
+        `Gemini API Error: ${errorData.error?.message || "Unknown AI Error"}`,
       );
     }
 
@@ -142,7 +142,7 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
         jobId,
         channelName,
         email,
-        titles: improvedTitles,
+        improvedTitles,
       },
     });
   } catch (error: any) {

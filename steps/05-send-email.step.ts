@@ -1,4 +1,8 @@
 import { EventConfig } from "motia";
+import {
+  generateEmailHtml,
+  generateEmailTextFallback,
+} from "../components/email/improved-titles-email";
 
 // step-5
 // sends formatted email with improved titles to the users using resend
@@ -7,24 +11,9 @@ import { EventConfig } from "motia";
 export const config: EventConfig = {
   name: "SendEmail",
   type: "event",
-  subscribes: ["yt.videos.ready"],
+  subscribes: ["yt.titles.ready"],
   emits: ["yt.email.send"],
 };
-
-interface Video {
-  id: string;
-  title: string;
-  url: string;
-  publishedAt: string;
-  thumbnail?: string;
-}
-
-interface ImprovedTitle {
-  original: string;
-  improved: string;
-  rationale: string;
-  url: string;
-}
 
 export const handler = async (eventData: any, { emit, logger, state }: any) => {
   let jobId: string | undefined;
@@ -55,7 +44,11 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
       status: "sending email",
     });
 
-    const emailText = generateEmailText(channelName, improvedTitles);
+    const emailHtml = generateEmailHtml(channelName, improvedTitles);
+    const emailTextFallback = generateEmailTextFallback(
+      channelName,
+      improvedTitles,
+    );
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -67,14 +60,18 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
         from: RESEND_FROM_EMAIL,
         to: email,
         subject: `New Titles for ${channelName}`,
-        text: emailText,
+        html: emailHtml, // Send HTML content
+        text: emailTextFallback, // Provide a plain text fallback
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
+      logger.error("Resend API Error - Status:", { status: response.status });
+      logger.error("Resend API Error - Data:", { errorData });
       throw new Error(
-        `Resend API Error: ${errorData.error.message}` || `Unknown Email Error`,
+        `Resend API Error: ${errorData.error?.message || "Unknown error details"}` ||
+          `Unknown Email Error`,
       );
     }
 
@@ -89,7 +86,7 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
     });
 
     await emit({
-      topic: "yt.email.sent",
+      topic: "yt.email.send",
       data: {
         jobId,
         email,
@@ -97,7 +94,7 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
       },
     });
   } catch (error: any) {
-    logger.error("Error sending email", { error: error.message });
+    logger.error("Error sending email", { error });
 
     if (!jobId) {
       logger.error("Cannot send error notification - missing jobId");
@@ -109,29 +106,7 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
     await state.set(`job: ${jobId}`, {
       ...jobData,
       status: "failed",
-      error: error.message,
+      error: error,
     });
   }
 };
-
-function generateEmailText(
-  channelName: string,
-  titles: ImprovedTitle[],
-): string {
-  let text = `YouTube Title Doctor - Improved Titles for ${channelName}\n\n`;
-  text += `${"=".repeat(60)}\n\n`;
-
-  titles.forEach((title, index) => {
-    text += `Video ${index + 1}:\n`;
-    text += `----------------------\n`;
-    text += `Original: ${title.original}\n`;
-    text += `Improved: ${title.improved}\n`;
-    text += `Why: ${title.rationale}\n`;
-    text += `Watch: ${title.url}\n`;
-    text += ``;
-  });
-
-  text += `${"=".repeat(60)}\n\n`;
-  text += `Powered by Motia.dev\n`;
-  return text;
-}
