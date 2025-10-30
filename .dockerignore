@@ -1,0 +1,50 @@
+# Ignore everything
+**/*
+
+# Allow necessary files
+!/package.json
+!/package-lock.json
+!/tsconfig.json
+!/motia.config.json
+
+# Allow src files
+!/src/
+
+# Allow steps, types, and components directories
+!/steps/
+!/types.d.ts
+!/components/
+
+# Don't ignore .env files specifically if they are needed at build time
+# (though usually .env files are handled separately for runtime)
+# !.env
+
+# Ignore common development specific files and directories
+node_modules
+.git
+.gitignore
+.dockerignore
+README.md
+LICENSE
+.vscode
+.idea
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env*
+.DS_Store
+Thumbs.db
+__pycache__
+*.pyc
+venv
+.venv
+python_modules
+.motia # Motia's internal build/cache
+.mermaid # Motia's internal build/cache
+
+# If `motia build` outputs to a specific directory that is NOT `dist`,
+# make sure to allow it here if you need it in the build context.
+# Otherwise, it's typically ignored and copied from the builder stage.
+# For example:
+# !/build/
