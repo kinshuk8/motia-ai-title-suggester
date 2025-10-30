@@ -1,5 +1,6 @@
 node_modules
 python_modules
+.env
 .venv
 venv
 .motia
