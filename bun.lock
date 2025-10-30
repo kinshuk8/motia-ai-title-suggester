@@ -5,12 +5,12 @@
       "name": ".",
       "dependencies": {
         "motia": "^0.8.2-beta.139",
-        "zod": "^3.24.4",
+        "zod": "^3.25.76",
       },
       "devDependencies": {
-        "@types/react": "^18.3.18",
+        "@types/react": "^18.3.26",
         "ts-node": "^10.9.2",
-        "typescript": "^5.7.3",
+        "typescript": "^5.9.3",
       },
     },
   },
