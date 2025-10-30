@@ -78,6 +78,8 @@ export const handler = async (eventData: any, { emit, logger, state }: any) => {
       topic: "yt.channel.resolved",
       data: {
         jobId,
+        channelId,
+        channelName,
         email,
       },
     });
